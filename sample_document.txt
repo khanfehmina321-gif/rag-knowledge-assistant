@@ -1,0 +1,31 @@
+Introduction to Artificial Intelligence
+
+Artificial Intelligence (AI) is the simulation of human intelligence in machines that are programmed to think and act like humans. The term may also be applied to any machine that exhibits traits associated with a human mind, such as learning and problem-solving. AI has become one of the most transformative technologies of the 21st century, impacting industries ranging from healthcare to finance to transportation.
+
+Machine Learning Basics
+
+Machine Learning (ML) is a subset of AI that focuses on building systems that learn from data rather than being explicitly programmed. Instead of writing rules by hand, we feed algorithms large amounts of data and let them identify patterns on their own. There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning. Supervised learning uses labeled data to train models, unsupervised learning finds hidden patterns in unlabeled data, and reinforcement learning trains agents through rewards and penalties.
+
+What is Natural Language Processing
+
+Natural Language Processing (NLP) is a branch of AI that helps computers understand, interpret, and generate human language. NLP powers many applications we use daily, including chatbots, translation tools, and voice assistants. Modern NLP relies heavily on transformer-based models, which can understand context and relationships between words far better than older statistical methods.
+
+Understanding Large Language Models
+
+Large Language Models (LLMs) are a type of AI model trained on massive amounts of text data to understand and generate human-like language. Models like GPT, Llama, and Claude are examples of LLMs. These models work by predicting the next word in a sequence based on the context of previous words. LLMs are used in applications such as chatbots, content generation, code completion, and question-answering systems. Training these models requires significant computational resources, often involving thousands of GPUs running for weeks or months.
+
+What is Retrieval-Augmented Generation
+
+Retrieval-Augmented Generation (RAG) is a technique that combines the power of large language models with external knowledge sources. Instead of relying solely on what the model learned during training, RAG systems retrieve relevant information from a database or document collection and use that information to generate more accurate and up-to-date responses. This approach helps reduce hallucinations, where a model generates incorrect or made-up information, because the model has access to real, relevant facts to base its answer on.
+
+How Vector Databases Work
+
+Vector databases store data as high-dimensional numerical representations called embeddings. These embeddings capture the semantic meaning of text, images, or other data types. When a query is made, the vector database calculates the similarity between the query embedding and stored embeddings, returning the most relevant results. Popular vector databases include Pinecone, Weaviate, Chroma, and PostgreSQL with the pgvector extension. Vector search is much more powerful than traditional keyword search because it understands meaning and context rather than just matching exact words.
+
+The Importance of Chunking Strategy
+
+When building a RAG system, how you split documents into chunks significantly affects retrieval quality. If chunks are too small, they may lack sufficient context. If chunks are too large, they may contain irrelevant information that confuses the retrieval process. Semantic chunking, which splits text based on meaning and topic boundaries rather than fixed character counts, generally produces better results than naive fixed-size splitting.
+
+Evaluating RAG Systems
+
+Evaluating a RAG system involves measuring several key metrics. Faithfulness measures whether the generated answer is factually consistent with the retrieved context. Answer relevance measures whether the response actually addresses the user's question. Context precision and recall measure how well the retrieval step found the right information. Tools like RAGAS provide automated frameworks for calculating these metrics without requiring extensive manual review.
