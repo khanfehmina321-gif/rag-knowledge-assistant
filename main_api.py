@@ -7,7 +7,6 @@ so a frontend (like Next.js) can send questions and get answers.
 import os
 from dotenv import load_dotenv
 import psycopg2
-from sentence_transformers import SentenceTransformer
 from groq import Groq
 
 from fastapi import FastAPI, UploadFile, File
@@ -15,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from fastembed import TextEmbedding
 
 load_dotenv()
 
@@ -33,8 +33,10 @@ app.add_middleware(
 
 # Load the embedding model once when the server starts (not on every request —
 # that would be slow). This stays in memory as long as the server is running.
+# fastembed uses ONNX Runtime instead of PyTorch, which uses significantly
+# less memory — important for running on free/low-memory hosting tiers.
 print("🧠 Loading embedding model...")
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+embedding_model = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
 print("✅ Embedding model loaded.")
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
@@ -104,7 +106,8 @@ class QueryResponse(BaseModel):
 
 # ---------- Core RAG functions (same logic as before) ----------
 def get_query_embedding(query: str) -> str:
-    embedding = embedding_model.encode(query)
+    # fastembed's embed() returns a generator of numpy arrays — we take the first (only) one
+    embedding = list(embedding_model.embed([query]))[0]
     return "[" + ",".join(str(x) for x in embedding) + "]"
 
 
@@ -297,7 +300,7 @@ Answer:"""
     response = groq_client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.0,
+        temperature=0.3,
     )
     return response.choices[0].message.content
 
@@ -400,7 +403,7 @@ async def upload_document(file: UploadFile = File(...)):
         if not chunks:
             return {"error": "No content could be extracted from this file."}
 
-        embeddings = embedding_model.encode(chunks, show_progress_bar=False, batch_size=32)
+        embeddings = list(embedding_model.embed(chunks))
         store_uploaded_chunks(chunks, embeddings, document_id)
 
         return {
