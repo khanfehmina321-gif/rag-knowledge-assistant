@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 
+// Reads the backend URL from environment variable, with local dev as fallback.
+// On Vercel, set NEXT_PUBLIC_API_URL to your Render backend URL.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 export default function Home() {
   const [question, setQuestion] = useState("");
   const [conversation, setConversation] = useState([]); // [{question, answer, sources, timestamp}]
@@ -39,7 +43,7 @@ export default function Home() {
   const fetchDocuments = async () => {
     setLoadingDocs(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/documents");
+      const response = await fetch(`${API_URL}/documents`);
       const data = await response.json();
       setDocuments(data.documents || []);
     } catch (err) {
@@ -56,7 +60,7 @@ export default function Home() {
 
   const handleDeleteDocument = async (documentId) => {
     try {
-      await fetch(`http://127.0.0.1:8000/documents/${encodeURIComponent(documentId)}`, {
+      await fetch(`${API_URL}/documents/${encodeURIComponent(documentId)}`, {
         method: "DELETE",
       });
       // Refresh the list after deleting
@@ -91,7 +95,7 @@ export default function Home() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch("http://127.0.0.1:8000/upload", {
+    const response = await fetch(`${API_URL}/upload`, {
       method: "POST",
       body: formData,
     });
@@ -156,7 +160,7 @@ export default function Home() {
     setQuestion(""); // Clear the input immediately for a snappier feel
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/query", {
+      const response = await fetch(`${API_URL}/query`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
