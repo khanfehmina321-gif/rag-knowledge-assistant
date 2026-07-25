@@ -46,9 +46,11 @@ def analysis_agent(state: AnalystState) -> dict:
 
     # If Data Agent already did a SQL aggregate calculation, skip the LLM
     # entirely — the number is already final and correct.
-    if len(chunks) == 1 and chunks[0].startswith("Pre-calculated"):
-        print("📊 Analysis Agent: using pre-calculated value, skipping LLM.")
-        return {"analysis": chunks[0]}
+    if all(c.startswith("Pre-calculated") for c in chunks):
+        print("📊 Analysis Agent: using pre-calculated values, skipping LLM.")
+        return {"analysis": "\n".join(chunks)}
+
+
 
     print(f"📊 Analysis Agent: analyzing {len(chunks)} chunks...")
 

@@ -23,7 +23,11 @@ Original Question: {question}
 Analysis & Calculations:
 {analysis}
 
-Write the final answer for the client. Choose the format that fits the question:
+Write the final answer for the client, using ONLY the numbers given in the
+Analysis above. Do not introduce any additional figures, calculations, or
+claims that are not explicitly present in the Analysis.
+
+Choose the format that fits the question:
 - If it's a simple, single-value question (e.g. "what is the total X"), answer in a
   short, clear paragraph — no headings or bullets needed.
 - If it's a multi-part or comparative question (e.g. trends, comparisons, breakdowns
