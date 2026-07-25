@@ -15,17 +15,16 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def build_analysis_prompt(question: str, chunks: list[str]) -> str:
-    """
-    Builds the prompt that asks the LLM to extract numbers and
-    do the actual calculations/comparisons based on retrieved data.
-    """
     context = "\n".join(f"- {chunk}" for chunk in chunks)
 
     return f"""You are a data analyst. Below is raw data retrieved from a database,
-followed by a business question. Your job is to:
+followed by a business question. All monetary amounts are in Indian Rupees (INR) —
+always use ₹, never $ or "dollars".
+
+Your job is to:
 1. Extract the relevant numeric values from the data
 2. Perform any needed calculations (totals, averages, comparisons, trends)
-3. Show your work briefly, then state the final numeric answer clearly
+3. Show your work briefly, then state the final numeric answer clearly using ₹
 
 Retrieved Data:
 {context}

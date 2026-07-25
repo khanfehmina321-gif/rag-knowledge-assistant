@@ -18,6 +18,9 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 def build_report_prompt(question: str, analysis: str) -> str:
     return f"""You are a business analyst writing a final answer for a client.
 
+All monetary amounts in this data are in Indian Rupees (INR). Always use the
+₹ symbol before amounts — never use $ or the word "dollars".
+
 Original Question: {question}
 
 Analysis & Calculations:
@@ -35,7 +38,7 @@ Choose the format that fits the question:
   or a small section for each part.
 
 Keep it client-facing: no mention of "chunks", "database", or internal process.
-Be concise and confident. State numbers clearly.
+Be concise and confident. State amounts in ₹ (Indian Rupees) clearly.
 """
 
 
