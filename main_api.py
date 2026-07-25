@@ -13,6 +13,8 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
+from state import AnalystState
+from graph import build_graph
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from fastembed import TextEmbedding
 
@@ -40,6 +42,10 @@ embedding_model = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-
 print("✅ Embedding model loaded.")
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+print("🧠 Loading Business Analyst graph...")
+analyst_app = build_graph()
+print("✅ Business Analyst graph loaded.")
 
 
 # ---------- File loaders for upload endpoint ----------
@@ -102,6 +108,11 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     answer: str
     sources: list[str]
+
+
+class BusinessAnalysisResponse(BaseModel):
+    final_report: str
+    analysis: str
 
 
 # ---------- Core RAG functions (same logic as before) ----------
@@ -431,3 +442,23 @@ def query_rag(request: QueryRequest):
     sources = [chunk_text[:150] + "..." for _, chunk_text, _ in results]
 
     return QueryResponse(answer=answer, sources=sources)
+
+
+@app.post("/business-query", response_model=BusinessAnalysisResponse)
+def business_query(request: QueryRequest):
+    """
+    Multi-agent business analyst endpoint. Routes aggregate questions
+    through SQL calculation, other questions through semantic search,
+    then produces a calculated, report-style answer.
+    """
+    initial_state: AnalystState = {
+        "question": request.question,
+        "retrieved_data": [],
+        "analysis": "",
+        "final_report": "",
+    }
+    result = analyst_app.invoke(initial_state)
+    return BusinessAnalysisResponse(
+        final_report=result["final_report"],
+        analysis=result["analysis"],
+    )

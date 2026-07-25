@@ -11,6 +11,7 @@ export default function Home() {
   const [conversation, setConversation] = useState([]); // [{question, answer, sources, timestamp}]
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState("query"); // "query" or "business-query"
 
   // Load saved conversation from localStorage once, when the page first opens
   useEffect(() => {
@@ -160,7 +161,9 @@ export default function Home() {
     setQuestion(""); // Clear the input immediately for a snappier feel
 
     try {
-      const response = await fetch(`${API_URL}/query`, {
+      const endpoint = mode === "business-query" ? "/business-query" : "/query";
+
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,12 +177,16 @@ export default function Home() {
 
       const data = await response.json();
 
+      // /business-query returns final_report instead of answer, and has no sources
+      const answerText = mode === "business-query" ? data.final_report : data.answer;
+      const sourcesList = mode === "business-query" ? [] : data.sources;
+
       // Add this exchange to the top of the conversation history
       setConversation((prev) => [
         {
           question: askedQuestion,
-          answer: data.answer,
-          sources: data.sources,
+          answer: answerText,
+          sources: sourcesList,
           timestamp: new Date().toLocaleTimeString(),
         },
         ...prev,
@@ -333,6 +340,30 @@ export default function Home() {
               )}
             </>
           )}
+        </div>
+
+        {/* Mode toggle */}
+        <div className="flex gap-2 mb-3">
+          <button
+            onClick={() => setMode("query")}
+            className={`text-sm px-4 py-2 rounded-lg transition-colors ${
+              mode === "query"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+            }`}
+          >
+            Normal Search
+          </button>
+          <button
+            onClick={() => setMode("business-query")}
+            className={`text-sm px-4 py-2 rounded-lg transition-colors ${
+              mode === "business-query"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+            }`}
+          >
+            Business Analyst Mode
+          </button>
         </div>
 
         {/* Question input area */}
