@@ -15,7 +15,7 @@ frontend/node_modules/
 frontend/.env.local
 
 # OS files
-.DS_Store
+.DS_Storegit rm -r --cached frontend
 Thumbs.db
 
 # Uploaded/test data files (optional - remove these lines if you want to include sample data)
