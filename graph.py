@@ -31,7 +31,7 @@ if __name__ == "__main__":
     app = build_graph()
 
     initial_state: AnalystState = {
-        "question": "What is the total amount received for flat bookings?",
+        "question": "How many bookings are there in total, and what is the total amount received for flat bookings?",
         "retrieved_data": [],
         "analysis": "",
         "final_report": "",
