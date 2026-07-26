@@ -31,7 +31,7 @@ if __name__ == "__main__":
     app = build_graph()
 
     initial_state: AnalystState = {
-        "question": "Show me a chart of total amount received per building",
+        "question": "Give me an executive summary of the business",
         "retrieved_data": [],
         "analysis": "",
         "final_report": "",
