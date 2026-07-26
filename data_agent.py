@@ -35,6 +35,14 @@ GROUP_BY_KEYWORDS = [
     "each building", "group by", "per sheet",
 ]
 
+EXEC_SUMMARY_KEYWORDS = [
+    "executive summary", "overview", "how is the business",
+    "summarize the business", "business summary", "summary of the business",
+]
+def is_exec_summary_question(question: str) -> bool:
+    q = question.lower()
+    return any(keyword in q for keyword in EXEC_SUMMARY_KEYWORDS)
+
 # Sheet names that are NOT actual buildings — exclude these from group-by
 # results (cancellation logs, commission sheets, month-wise summary sheets).
 NON_BUILDING_SHEET_KEYWORDS = ["CANCELLATION", "COMM"]
@@ -387,8 +395,41 @@ def data_agent(state: AnalystState) -> dict:
     """
     question = state["question"]
     chart_data = None  # default: no chart unless explicitly requested
+    
+    if is_exec_summary_question(question):
+        print("📋 Data Agent: executive summary requested — running all key metrics...")
 
-    if is_kpi_question(question):
+        total_revenue = run_aggregate_query("SUM")
+        total_bookings = run_aggregate_query("COUNT")
+        building_totals = run_group_by_query("SUM")
+        efficiency_rows = run_efficiency_query()
+        growth_rows = run_growth_query()
+
+        chunks = ["Pre-calculated: Executive summary inputs (from database):"]
+        chunks.append(f"  Overall total revenue: ₹{format_inr(total_revenue)}")
+        chunks.append(f"  Overall total bookings: {total_bookings}")
+
+        chunks.append("  Revenue per building:")
+        for building, value in building_totals:
+            chunks.append(f"    - {building}: ₹{format_inr(value)}")
+
+        chunks.append("  Collection efficiency per building:")
+        for building, efficiency in efficiency_rows:
+            chunks.append(f"    - {building}: {efficiency}%")
+
+        if growth_rows:
+            first_month, first_total, _ = growth_rows[0]
+            last_month, last_total, last_growth = growth_rows[-1]
+            peak_month, peak_total, _ = max(growth_rows, key=lambda r: r[1])
+            chunks.append(
+                f"  Growth trend: from ₹{format_inr(first_total)} in {first_month} "
+                f"to ₹{format_inr(last_total)} in {last_month} "
+                f"(peak was ₹{format_inr(peak_total)} in {peak_month})"
+            )
+
+        print("✅ Data Agent: executive summary inputs prepared.")
+
+    elif is_kpi_question(question):
         kpi_type = detect_kpi_type(question)
         print(f"📈 Data Agent: KPI question detected ({kpi_type})...")
 
@@ -467,7 +508,7 @@ def data_agent(state: AnalystState) -> dict:
 
 if __name__ == "__main__":
     test_state: AnalystState = {
-        "question": "Who booked flat 503",
+        "question": "Give me an executive summary of the business",
         "retrieved_data": [],
         "analysis": "",
         "final_report": "",

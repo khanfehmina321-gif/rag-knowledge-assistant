@@ -38,6 +38,17 @@ Choose the format that fits the question:
 - If it's a multi-part or comparative question (e.g. trends, comparisons, breakdowns
   by category), use light structure — a short summary line followed by bullet points
   or a small section for each part.
+  - If it's a simple, single-value question (e.g. "what is the total X"), answer in a
+  short, clear paragraph — no headings or bullets needed.
+- If it's a multi-part or comparative question (e.g. trends, comparisons, breakdowns
+  by category), use light structure — a short summary line followed by bullet points
+  or a small section for each part.
+- If the Analysis contains "Executive summary inputs" (overall revenue, per-building
+  breakdown, efficiency, and growth trend together), write a proper executive summary
+  with these sections as headings: **Overview**, **Building Performance**,
+  **Collection Efficiency**, **Growth Trend**, and **Key Insights** (2-3 bullet
+  observations that connect the numbers — e.g. which building is more efficient,
+  or how growth has trended).
 
 IMPORTANT — if the Analysis contains a breakdown/list with named labels (e.g. building
 names, categories, sheet names), you MUST use each label EXACTLY as written in a
