@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import BarChartDisplay from "./components/BarChartDisplay";
 
 // Reads the backend URL from environment variable, with local dev as fallback.
 // On Vercel, set NEXT_PUBLIC_API_URL to your Render backend URL.
@@ -180,6 +181,7 @@ export default function Home() {
       // /business-query returns final_report instead of answer, and has no sources
       const answerText = mode === "business-query" ? data.final_report : data.answer;
       const sourcesList = mode === "business-query" ? [] : data.sources;
+      const chartData = mode === "business-query" ? data.chart_data : null;
 
       // Add this exchange to the top of the conversation history
       setConversation((prev) => [
@@ -187,6 +189,7 @@ export default function Home() {
           question: askedQuestion,
           answer: answerText,
           sources: sourcesList,
+          chartData: chartData,
           timestamp: new Date().toLocaleTimeString(),
         },
         ...prev,
@@ -429,6 +432,8 @@ export default function Home() {
                       {exchange.answer}
                     </p>
                   </div>
+                  {/* Chart, if this answer included one */}
+                  {exchange.chartData && <BarChartDisplay chartData={exchange.chartData} />}
 
                   {/* Sources for this specific answer */}
                   {exchange.sources && exchange.sources.length > 0 && (

@@ -5,7 +5,7 @@ This defines the "shared whiteboard" that flows through all agents:
 Data Agent -> Analysis Agent -> Report Agent
 """
 
-from typing import TypedDict
+from typing import TypedDict, Optional
 
 
 class AnalystState(TypedDict):
@@ -20,3 +20,8 @@ class AnalystState(TypedDict):
 
     # The final, polished answer shown to the user (filled by Report Agent)
     final_report: str
+
+    # Structured chart data for frontend rendering (filled by Data Agent
+    # only when the question explicitly asks for a chart/graph/plot).
+    # None when no chart was requested.
+    chart_data: Optional[dict]
