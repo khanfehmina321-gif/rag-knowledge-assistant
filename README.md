@@ -16,13 +16,16 @@ HTTP POST /query
 ↓
 FastAPI Backend
 ↓
-
 Embed the question (Sentence Transformers)
+↓
 Run THREE parallel searches on Neon PostgreSQL:
+
 Exact code/ID match (ILIKE)
 Full-text keyword search (tsvector/tsquery)
 Semantic vector search (pgvector cosine similarity)
+↓
 Merge results via Reciprocal Rank Fusion (RRF)
+↓
 Send fused context + question to Groq (Llama 3.1)
 ↓
 JSON Response (answer + sources)
@@ -57,9 +60,9 @@ Answer displayed in a persistent chat UI
 - **Source transparency** — every answer displays the source chunks used to generate it
 - **Clean, responsive UI** — built with Next.js and Tailwind CSS
 
-## 🤖 AI Business Analyst (Multi-Agent Extension)
+## AI Business Analyst — Multi-Agent Pipeline
 
-On top of the core RAG pipeline, this project includes a second, more advanced mode: an **"AI Business Analyst"** built with a multi-agent architecture using **LangGraph**. While the standard RAG pipeline retrieves the top-k semantically similar chunks and asks the LLM to answer from them, this mode is designed specifically for **aggregate/analytical questions** (totals, averages, comparisons) — questions where semantic similarity search alone gives unreliable or approximate results.
+Built on top of the RAG system, this multi-agent pipeline (Data Agent → Analysis Agent → Report Agent, orchestrated with LangGraph) answers complex business questions directly from uploaded Excel data, going beyond simple fact retrieval.
 
 ### Why this exists
 
@@ -71,29 +74,37 @@ Standard RAG retrieval only pulls the *k* most similar chunks to a query. For a 
 |---|---|---|
 | "What is the lowest amount received for a booking?" | ₹50,000 *(wrong — based on a partial sample of retrieved chunks)* | ₹10,000 *(correct — calculated via SQL across all records)* |
 
+### Features
+
+- **Aggregate calculations** — SUM, AVG, MAX, MIN, COUNT, computed via direct SQL queries (not LLM math), including compound questions asking for multiple aggregates at once (e.g. "how many bookings and what's the total amount").
+
+- **Group-by breakdowns** — Per-building revenue breakdowns via SQL `GROUP BY` on the sheet name, with automatic exclusion of non-building sheets (cancellation logs, commission sheets, month-wise summaries). Amounts formatted in Indian numbering style (lakh/crore) with ₹.
+
+- **Chart/graph generation** — Triggered by explicit chart/graph/plot keywords. Backend builds structured chart data (bar for group-by breakdowns, line for growth trends); frontend renders it as an interactive Recharts chart with Indian crore/lakh axis formatting.
+
+- **KPI calculations**:
+  - *Collection efficiency* per building (amount received ÷ basic rate, as a %)
+  - *Month-over-month growth trend* (parsed from booking dates), with % change calculated between consecutive months
+
+- **Natural language record search** — Handles specific-record questions (e.g. "who booked flat 503") using a hybrid of word-boundary exact-match SQL search (for flat numbers/codes) and semantic vector search, synthesized into a clean answer by the LLM.
+
+- **Executive summary generation** — A single "executive summary" or "overview" request runs all key metrics together (total revenue, bookings, per-building breakdown, collection efficiency, growth trend) and formats them into a structured report with Overview, Building Performance, Collection Efficiency, Growth Trend, and Key Insights sections.
+
 ### Architecture
 
-User Question
-↓
-Data Agent — detects if the question is aggregate-type
-↓ ↓
-Aggregate question Non-aggregate question
-↓ ↓
-Run SQL SUM/AVG/MAX/MIN/COUNT Hybrid semantic search (as in normal RAG)
-directly on the database ↓
-(supports compound questions,
-e.g. "count AND total")
-↓ ↓
-Analysis Agent
-(skips the LLM entirely when the Data Agent
-already computed an exact value — otherwise
-asks Groq Llama 3.1 to calculate from raw chunks)
-↓
-Report Agent
-(writes a final, client-facing answer in ₹ INR,
-using ONLY the numbers provided — no invented figures)
-↓
-Final Answer to User
+User question
+│
+▼
+Data Agent — routes the question (KPI / group-by / aggregate / exec-summary / semantic+exact search)
+│ and runs the matching SQL query or hybrid search directly on Postgres
+▼
+Analysis Agent — passes through pre-calculated SQL results as-is (no LLM needed),
+│ or runs LLM analysis for open-ended/semantic questions
+▼
+Report Agent — formats the final answer as a client-facing report
+│ (paragraph, bullets, or full executive summary depending on the question)
+▼
+Frontend (Next.js + Recharts) — renders the report text, and any chart data, inline
 
 
 ### Key design decisions
@@ -103,6 +114,17 @@ Final Answer to User
 - **LLM skip for pre-calculated values**: when the Data Agent has already computed an exact number via SQL, the Analysis Agent skips calling the LLM entirely — this avoids unnecessary token usage/cost and removes any chance of the LLM altering a correct number.
 - **Orchestration via LangGraph**: the three agents (Data → Analysis → Report) are wired together as a `StateGraph`, with a shared `AnalystState` passed between nodes — a pattern that scales cleanly if more specialized agents are added later.
 
+### Tech stack
+
+- **Backend:** FastAPI, LangGraph, Groq (Llama 3.1) for generation
+- **Database:** Neon PostgreSQL with pgvector, all data stored as text chunks with regex-based field extraction (no separate structured tables)
+- **Embeddings:** fastembed (ONNX) — `sentence-transformers/all-MiniLM-L6-v2`
+- **Frontend:** Next.js, Tailwind, Recharts for interactive charts
+
+### Status
+
+All planned features implemented, tested, and confirmed working on the live production deployment (Render backend + Vercel frontend).
+
 ### Try it
 
 The frontend includes a **"Business Analyst Mode"** toggle next to the question input — switching modes changes which backend endpoint (`/query` vs `/business-query`) handles the request, using the same uploaded documents.
@@ -110,7 +132,7 @@ The frontend includes a **"Business Analyst Mode"** toggle next to the question 
 ## 📂 Project Structure
 
 ├── main_api.py # FastAPI backend: /query, /upload, /documents, /business-query endpoints
-├── data_agent.py # Business Analyst: retrieval + SQL aggregate routing
+├── data_agent.py # Business Analyst: retrieval + SQL aggregate/group-by/KPI routing
 ├── analysis_agent.py # Business Analyst: calculation/analysis via Groq
 ├── report_agent.py # Business Analyst: final client-facing report generation
 ├── graph.py # LangGraph orchestration of the three agents
@@ -123,7 +145,10 @@ The frontend includes a **"Business Analyst Mode"** toggle next to the question 
 ├── test_connection.py # Database connection test utility
 ├── sample_document.txt # Sample knowledge base document
 ├── frontend/ # Next.js frontend application
-│ └── src/app/page.js # Main chat interface with upload + document management
+│ └── src/app/
+│ ├── page.js # Main chat interface with upload + document management
+│ └── components/
+│ └── BarChartDisplay.jsx # Recharts bar/line chart renderer
 └── .env # Environment variables (not committed)
 
 
@@ -193,7 +218,7 @@ npm run dev
 Frontend runs at `http://localhost:3000`.
 
 ### 7. Upload documents and start asking questions
-Use the upload area in the UI to add `.txt`, `.xlsx`, `.xls`, or `.csv` files — no need to run any scripts manually. Use the **"Business Analyst Mode"** toggle for aggregate/analytical questions (totals, averages, comparisons).
+Use the upload area in the UI to add `.txt`, `.xlsx`, `.xls`, or `.csv` files — no need to run any scripts manually. Use the **"Business Analyst Mode"** toggle for aggregate/analytical questions (totals, averages, comparisons, breakdowns, charts, KPIs, and executive summaries).
 
 ## 🔮 Future Improvements
 
@@ -203,7 +228,11 @@ Use the upload area in the UI to add `.txt`, `.xlsx`, `.xls`, or `.csv` files �
 - [ ] Automatic Excel header-row detection (to handle messy real-world spreadsheets)
 - [ ] Backend-persisted conversation history (multi-device sync)
 - [ ] Upload progress percentage (currently shows per-file status, not byte-level progress)
-- [ ] Group-by aggregate support in Business Analyst Mode (e.g. "which building is most profitable")
+- [x] Group-by aggregate support in Business Analyst Mode
+- [x] Chart/graph generation for aggregate and KPI questions
+- [x] KPI calculations (collection efficiency, growth trends)
+- [x] Natural language specific-record search (exact-match + semantic hybrid)
+- [x] Executive summary generation
 
 ## 📝 License
 
