@@ -43,13 +43,13 @@ def analysis_agent(state: AnalystState) -> dict:
     """
     chunks = state["retrieved_data"]
 
-    # If Data Agent already did a SQL aggregate calculation, skip the LLM
-    # entirely — the number is already final and correct.
-    if all(c.startswith("Pre-calculated") for c in chunks):
+    # If Data Agent already did a SQL aggregate/group-by calculation, skip
+    # the LLM entirely — the numbers are already final and correct.
+    # (Only the first chunk carries the "Pre-calculated" marker; group-by
+    # results have indented list lines after it that don't.)
+    if chunks and chunks[0].startswith("Pre-calculated"):
         print("📊 Analysis Agent: using pre-calculated values, skipping LLM.")
         return {"analysis": "\n".join(chunks)}
-
-
 
     print(f"📊 Analysis Agent: analyzing {len(chunks)} chunks...")
 
@@ -68,7 +68,6 @@ def analysis_agent(state: AnalystState) -> dict:
     print("✅ Analysis Agent: analysis complete.")
 
     return {"analysis": analysis_result}
-
 
 # Quick standalone test
 if __name__ == "__main__":

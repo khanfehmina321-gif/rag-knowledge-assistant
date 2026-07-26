@@ -12,6 +12,7 @@ from groq import Groq
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 import pandas as pd
 from state import AnalystState
 from graph import build_graph
@@ -113,6 +114,7 @@ class QueryResponse(BaseModel):
 class BusinessAnalysisResponse(BaseModel):
     final_report: str
     analysis: str
+    chart_data: Optional[dict] = None
 
 
 # ---------- Core RAG functions (same logic as before) ----------
@@ -456,9 +458,11 @@ def business_query(request: QueryRequest):
         "retrieved_data": [],
         "analysis": "",
         "final_report": "",
+        "chart_data": None,
     }
     result = analyst_app.invoke(initial_state)
     return BusinessAnalysisResponse(
         final_report=result["final_report"],
         analysis=result["analysis"],
+        chart_data=result.get("chart_data"),
     )

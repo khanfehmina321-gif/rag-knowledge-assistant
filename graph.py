@@ -31,10 +31,11 @@ if __name__ == "__main__":
     app = build_graph()
 
     initial_state: AnalystState = {
-        "question": "How many bookings are there in total, and what is the total amount received for flat bookings?",
+        "question": "Show me a chart of total amount received per building",
         "retrieved_data": [],
         "analysis": "",
         "final_report": "",
+        "chart_data": None,
     }
 
     result = app.invoke(initial_state)
@@ -43,3 +44,7 @@ if __name__ == "__main__":
     print("FINAL REPORT")
     print("=" * 50)
     print(result["final_report"])
+    print("\n" + "=" * 50)
+    print("CHART DATA")
+    print("=" * 50)
+    print(result.get("chart_data"))

@@ -29,6 +29,8 @@ Analysis & Calculations:
 Write the final answer for the client, using ONLY the numbers given in the
 Analysis above. Do not introduce any additional figures, calculations, or
 claims that are not explicitly present in the Analysis.
+Use the ₹ amounts EXACTLY as they appear in the Analysis — do not recalculate,
+reformat, or re-total any numbers yourself.
 
 Choose the format that fits the question:
 - If it's a simple, single-value question (e.g. "what is the total X"), answer in a
@@ -36,6 +38,12 @@ Choose the format that fits the question:
 - If it's a multi-part or comparative question (e.g. trends, comparisons, breakdowns
   by category), use light structure — a short summary line followed by bullet points
   or a small section for each part.
+
+IMPORTANT — if the Analysis contains a breakdown/list with named labels (e.g. building
+names, categories, sheet names), you MUST use each label EXACTLY as written in a
+bullet list — one bullet per label with its value. Never merge labels together,
+never replace a label with a vague phrase like "as per old records", and never drop
+any label that appears in the Analysis.
 
 Keep it client-facing: no mention of "chunks", "database", or internal process.
 Be concise and confident. State amounts in ₹ (Indian Rupees) clearly.
