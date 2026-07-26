@@ -4,6 +4,7 @@ python-dotenv
 psycopg2-binary
 pandas
 openpyxl
+python-multipart
 fastembed
 langchain-text-splitters
 groq==0.37.1
